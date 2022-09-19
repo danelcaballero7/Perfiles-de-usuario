@@ -1,14 +1,13 @@
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from profiles_api import serializer, models, permissions
-from rest_framework import viewsets
+from rest_framework import viewsets, status, mixins
 from rest_framework.authentication import TokenAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
 
 
 class HelloApiView(APIView):
@@ -96,7 +95,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (permissions.UpdateOwnProfile,)
     filter_backends = [DjangoFilterBackend]
-    search_fields = ['name', 'email',]
+    search_fields = ['name', 'email', 'avatar']
 
 class UserLoginApiView(ObtainAuthToken):
     """Crea tokens de autenticacion de ususario"""
@@ -112,3 +111,16 @@ class UserProfileFeedViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Setear el perfil de usuario para el usuario que este logueado"""
         serializer.save(user_profile=self.request)
+
+@action(methods=['POST'], detail=True, url_path='upload-image')
+def upload_image(self, request, pk=None):
+    """Subir avatar"""
+    UserProfile=self.get_object()
+    serializer=self.get_serializer(UserProfile, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(
+        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+    )

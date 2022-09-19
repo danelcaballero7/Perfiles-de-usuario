@@ -3,7 +3,14 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import BaseUserManager
 from django.conf import settings
+import  uuid
+import os
 # Create your models here.
+
+def UserProfile_image_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = f'{uuid.uuid4()}.{ext}'
+    return os.path.join('uploads/recipe/', filename)
 
 class UserProfileManager(BaseUserManager):
     """Manager para perfiles de usuarios """
@@ -14,7 +21,6 @@ class UserProfileManager(BaseUserManager):
             raise ValueError('Usuario debe tener un Email')
         email = self.normalize_email(email)
         user = self.model(email=email, name=name)
-
         user.set_password(password)
         user.save(using=self._db)
 
@@ -25,14 +31,17 @@ class UserProfileManager(BaseUserManager):
         user.is_superuser=True
         user.is_staff=True
         user.save(using=self._db)
+
         return user
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     """Modelo Base de Datos para Usuarios en el Sistema"""
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
+    avatar = models.ImageField(null=True, upload_to='avatar')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+
 
     objects = UserProfileManager()
 
@@ -63,3 +72,7 @@ class ProfileFeedItem(models.Model):
     def __str__(self):
         """Retornar el modelo como cadena"""
         return self.status_text
+
+
+class UserProfile_image_file_path:
+    pass

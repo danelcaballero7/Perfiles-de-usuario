@@ -9,7 +9,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model= models.UserProfile
-        fields=('id','email','name','password')
+        fields=('id','email','name','password', 'avatar')
         extra_kwargs={
             'password':{
                 'write_only':True,
@@ -23,6 +23,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             name=validated_data['name'],
             password=validated_data['password'],
+            avatar=validated_data['avatar'],
         )
         return user
 
